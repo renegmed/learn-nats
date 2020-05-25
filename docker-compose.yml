@@ -1,9 +1,9 @@
 version: "2"
 
 services:
-  nats:
+  natsx:
     image: 'nats:1.1.0'
-    entrypoint: "/gnatsd -DV"
+    entrypoint: "/gnatsd -m 8222 -user foo -pass secret --logtime=false -DV"
     expose:
       - "4222"
     ports:
@@ -13,21 +13,21 @@ services:
     build:
       context: "./nats-docker-api"
     links:
-      - nats
+      - natsx
     environment:
-      - "NATS_URI=nats://nats:4222"
+      - "NATS_URI=nats://natsx:4222"
     depends_on:
-      - nats
+      - natsx
     ports:
       - "8282:8080"
   worker:
     build:
       context: "./nats-docker-worker"
     links:
-      - nats
+      - natsx
     environment:
-      - "NATS_URI=nats://nats:4222"
+      - "NATS_URI=nats://natsx:4222"
     depends_on:
-      - nats
+      - natsx
     ports:
       - "8484:8181"

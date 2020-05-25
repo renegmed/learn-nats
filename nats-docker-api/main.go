@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/nats-io/nats.go"
 )
@@ -35,19 +34,15 @@ func main() {
 	var err error
 	uri := os.Getenv("NATS_URI")
 
-	for i := 0; i < 5; i++ {
-		nc, err := nats.Connect(uri, nats.Name("practical-nats-client"))
-		if err == nil {
-			s.nc = nc
-			break
-		}
+	nc, err := nats.Connect(uri, nats.Name("practical-nats-client"),
+		nats.UserInfo("foo", "secret"),
+	)
 
-		fmt.Println("Waiting before connecting to NATS at:", uri)
-		time.Sleep(1 * time.Second)
-	}
 	if err != nil {
 		log.Fatal("Error establishing connection to NATS:", err)
 	}
+
+	s.nc = nc
 
 	log.Println("Connected to NATS at:", s.nc.ConnectedUrl())
 	http.HandleFunc("/", s.baseRoot)

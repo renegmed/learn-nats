@@ -18,7 +18,10 @@ func main() {
 	var err error
 	var nc *nats.Conn
 
-	nc, err = nats.Connect(uri, nats.Name("practical-nats-client"))
+	nc, err = nats.Connect(uri, nats.Name("practical-nats-worker"),
+		nats.UserInfo("foo", "secret"),
+	)
+
 	if err != nil {
 		log.Fatal("Error establishing connection to NATS:", err)
 	}

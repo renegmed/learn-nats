@@ -31,3 +31,21 @@ start:
 	docker start nats-docker_nats_1 nats-docker_worker_1 nats-docker_api_1
 .PHONY: start
 
+
+# informmation abou the server
+info-server:
+	watch -n 1 curl http://localhost:8222/varz --silent
+
+	# message throutput
+	# watch -n 1 'curl http://localhost:8222/varz --silent | grep "\(msgs\|byte\)"'
+.PHONY: info-server
+
+# statistics and metadata about the clients currently connected to the server.
+info-conn:
+	watch -n 1 curl http://localhost:8222/connz --silent
+.PHONY: info-conn
+
+# cumulative stats about internal state of the sublist data structur that server maintains.
+info-sublist:
+	watch -n 1 curl http://localhost:8222/subsz --silent
+.PHONY: info-sublist

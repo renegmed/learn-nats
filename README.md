@@ -1,6 +1,6 @@
 # Lesson learned with NATS using Golang #
 
-Chapter 3 The NATS Client
+## Chapter 3 The NATS Client ##
 
 Customizing a Connection
 

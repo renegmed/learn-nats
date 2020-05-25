@@ -1,0 +1,6 @@
+nats-docker-api/vendor 
+nats-docker-api/go.sum
+nats-docker-worker/vendor
+nats-docker-worker/go.sum
+
+

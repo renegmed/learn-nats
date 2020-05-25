@@ -1,0 +1,33 @@
+version: "2"
+
+services:
+  nats:
+    image: 'nats:1.1.0'
+    entrypoint: "/gnatsd -DV"
+    expose:
+      - "4222"
+    ports:
+      - "8222:8222"
+    hostname: nats-server
+  api:
+    build:
+      context: "./nats-docker-api"
+    links:
+      - nats
+    environment:
+      - "NATS_URI=nats://nats:4222"
+    depends_on:
+      - nats
+    ports:
+      - "8282:8080"
+  worker:
+    build:
+      context: "./nats-docker-worker"
+    links:
+      - nats
+    environment:
+      - "NATS_URI=nats://nats:4222"
+    depends_on:
+      - nats
+    ports:
+      - "8484:8181"

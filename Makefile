@@ -34,12 +34,22 @@ worker-logs-2:
 
 
 stop:
-	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_nats_1
+	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_natsx_1
 .PHONY: stop
 
 start:
-	docker start nats-docker_nats_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
+	docker start nats-docker_natsx_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
 .PHONY: start
+
+
+
+stop-non-server:
+	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_natsx_1
+.PHONY: stop-non-server
+
+start-non-server:
+	docker restart nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
+.PHONY: start-non-server
 
 
 # informmation abou the server

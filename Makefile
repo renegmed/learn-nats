@@ -43,13 +43,13 @@ start:
 
 
 
-stop-non-server:
-	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_natsx_1
-.PHONY: stop-non-server
+restart-server:
+	docker restart nats-docker_natsx_1
+.PHONY: restart-server
 
-start-non-server:
+restart-non-server:
 	docker restart nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
-.PHONY: start-non-server
+.PHONY: restart-non-server
 
 
 # informmation abou the server

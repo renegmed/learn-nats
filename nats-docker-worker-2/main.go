@@ -31,7 +31,7 @@ func main() {
 	log.Println("Connected to NATS at:", nc.ConnectedUrl())
 
 	// server balances requests randomly among the members of the group, workers-group
-	sub, err := nc.QueueSubscribe(">", "workers-group", func(m *nats.Msg) {
+	_, err = nc.QueueSubscribe(">", "workers-group", func(m *nats.Msg) {
 
 		payload := struct {
 			RequestID string `json:"request_id"`
@@ -51,8 +51,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error: unable to subscribe: %v", err)
 	}
-	// remove interest instantly on a subject after 2 messages received
-	sub.AutoUnsubscribe(2)
 
 	log.Println("----- This worker subscribed to 'greeting' for processing requests...-----")
 	log.Println("Server listening on port 8181...")

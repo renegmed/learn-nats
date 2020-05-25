@@ -14,25 +14,40 @@ type server struct {
 	nc *nats.Conn
 }
 
+type Payload struct {
+	RequestID string `json:"request_id"`
+	Data      []byte `json:"data"`
+}
+
 func (s server) baseRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Basic NATS based microservice example v0.0.1")
 }
 
 func (s server) createTask(w http.ResponseWriter, r *http.Request) {
-	payload := struct {
-		RequestID string `json:"request_id"`
-		Data      []byte `json:"data"`
-	}{
+	payload := Payload{
 		RequestID: "1234-5678-90",
 		Data:      []byte("Happy birthday to you!"),
 	}
 
-	for i := 0; i < 10; i++ {
+	publish(payload, &s, 10)
+
+	s.nc.Flush()
+
+	payload = Payload{
+		RequestID: "8888-7777-77",
+		Data:      []byte("Have a great celebration!"),
+	}
+
+	publish(payload, &s, 5)
+
+	s.nc.Flush()
+}
+
+func publish(payload Payload, s *server, n int) {
+	for i := 0; i < n; i++ {
 		payload.RequestID = payload.RequestID[:12]
 		payload.RequestID = fmt.Sprintf("%s-%d", payload.RequestID, i)
 		payloadJSON, err := json.Marshal(payload)
-
-		//log.Printf("Json data to published:\n %s\n", string(payloadJSON))
 
 		err = s.nc.Publish("greeting", payloadJSON)
 		if err != nil {
@@ -41,7 +56,6 @@ func (s server) createTask(w http.ResponseWriter, r *http.Request) {
 		log.Print("[Published] subject 'greeting' %d. data: \n%s\n", i, string(payloadJSON))
 	}
 }
-
 func (s server) healthz(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "OK")
 }

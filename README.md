@@ -16,6 +16,16 @@ In this example where there are a couple of subscriptions, one on
 a bare subject and another one on a wildcard.
 
 
+Flush()
+
+Internally, what is does is send everything that has accumulated in 
+pending buffer from client. Then, it sends a PING to the server, and 
+then waits for the PONG.
+
+As soon as the client receives the PONG reply, the Flush call will 
+unblock and let the client assume that the messages that were fired
+have been processed by the server.
+
 
 This is for NATS version 1.1
 Steps:

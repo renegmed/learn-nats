@@ -23,11 +23,11 @@ worker-logs:
 	docker logs -f nats-docker_worker_1
 .PHONY: worker-logs
 
-server-stop:
+stop:
 	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_nats_1
-.PHONY: server-stop
+.PHONY: stop
 
-server-start:
+start:
 	docker start nats-docker_nats_1 nats-docker_worker_1 nats-docker_api_1
-.PHONY: server-start
+.PHONY: start
 

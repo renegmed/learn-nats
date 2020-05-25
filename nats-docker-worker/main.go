@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -29,7 +30,17 @@ func main() {
 	log.Println("Connected to NATS at:", nc.ConnectedUrl())
 
 	nc.Subscribe("greeting", func(m *nats.Msg) {
-		log.Printf("Got subject '%s' message: \n\t %s\n", m.Subject, string(m.Data))
+		log.Printf("[Receive] subject '%s' message: \n\t %s\n", m.Subject, string(m.Data))
+		payload := struct {
+			RequestID string `json:"request_id"`
+			Data      []byte `json:"data"`
+		}{}
+
+		err := json.Unmarshal([]byte(m.Data), &payload)
+		if err != nil {
+			log.Fatalf("Error on unmarshalling payload: %v", err)
+		}
+		log.Printf("Received json:\n  request ID: %s\n  data: %v\n", payload.RequestID, string(payload.Data))
 	})
 
 	log.Println("Worker subscribed to 'greeting' for processing requests...")

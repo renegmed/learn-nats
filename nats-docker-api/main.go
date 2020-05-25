@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,11 +19,23 @@ func (s server) baseRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s server) createTask(w http.ResponseWriter, r *http.Request) {
-	err := s.nc.Publish("greeting", []byte("hello world"))
-	if err != nil {
-		log.Println("Error making NATS request:", err)
+	payload := struct {
+		RequestID string `json:"request_id"`
+		Data      []byte `json:"data"`
+	}{
+		RequestID: "1234-5678-90",
+		Data:      []byte("Happy birthday to you!"),
 	}
-	log.Print("+++ Published 'hello  world' to subject 'greeting'")
+
+	payloadJSON, err := json.Marshal(payload)
+
+	//log.Printf("Json data to published:\n %s\n", string(payloadJSON))
+
+	err = s.nc.Publish("greeting", payloadJSON)
+	if err != nil {
+		log.Println("Error on making NATS request:", err)
+	}
+	log.Print("[Published] subject 'greeting' data: \n%s\n", string(payloadJSON))
 }
 
 func (s server) healthz(w http.ResponseWriter, r *http.Request) {

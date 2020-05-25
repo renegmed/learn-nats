@@ -31,3 +31,15 @@ services:
       - natsx
     ports:
       - "8484:8181"
+
+  worker2:
+    build:
+      context: "./nats-docker-worker-2"
+    links:
+      - natsx
+    environment:
+      - "NATS_URI=nats://natsx:4222"
+    depends_on:
+      - natsx
+    ports:
+      - "8686:8181"     

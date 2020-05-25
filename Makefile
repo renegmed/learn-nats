@@ -23,12 +23,22 @@ worker-logs:
 	docker logs -f nats-docker_worker_1
 .PHONY: worker-logs
 
+
+worker-health-2:
+	curl http://localhost:8686/healthz
+.PHONY: worker-health-2
+
+worker-logs-2:
+	docker logs -f nats-docker_worker2_1
+.PHONY: worker-logs-2
+
+
 stop:
-	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_nats_1
+	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_nats_1
 .PHONY: stop
 
 start:
-	docker start nats-docker_nats_1 nats-docker_worker_1 nats-docker_api_1
+	docker start nats-docker_nats_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
 .PHONY: start
 
 

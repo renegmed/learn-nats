@@ -27,15 +27,19 @@ func (s server) createTask(w http.ResponseWriter, r *http.Request) {
 		Data:      []byte("Happy birthday to you!"),
 	}
 
-	payloadJSON, err := json.Marshal(payload)
+	for i := 0; i < 10; i++ {
+		payload.RequestID = payload.RequestID[:12]
+		payload.RequestID = fmt.Sprintf("%s-%d", payload.RequestID, i)
+		payloadJSON, err := json.Marshal(payload)
 
-	//log.Printf("Json data to published:\n %s\n", string(payloadJSON))
+		//log.Printf("Json data to published:\n %s\n", string(payloadJSON))
 
-	err = s.nc.Publish("greeting", payloadJSON)
-	if err != nil {
-		log.Println("Error on making NATS request:", err)
+		err = s.nc.Publish("greeting", payloadJSON)
+		if err != nil {
+			log.Printf("Error on making NATS request %d: %v\n", i, err)
+		}
+		log.Print("[Published] subject 'greeting' %d. data: \n%s\n", i, string(payloadJSON))
 	}
-	log.Print("[Published] subject 'greeting' data: \n%s\n", string(payloadJSON))
 }
 
 func (s server) healthz(w http.ResponseWriter, r *http.Request) {

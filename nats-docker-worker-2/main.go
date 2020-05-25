@@ -30,10 +30,9 @@ func main() {
 
 	log.Println("Connected to NATS at:", nc.ConnectedUrl())
 
-	// Note how the messages from the wildcard subscriptions are delayed
-	// more than those from the bare subscription
-	nc.Subscribe(">", func(m *nats.Msg) {
-		log.Printf("[Receive] subject '%s' message: \n\t %s\n", m.Subject, string(m.Data))
+	// server balances requests randomly among the members of the group, workers-group
+	nc.QueueSubscribe(">", "workers-group", func(m *nats.Msg) {
+
 		payload := struct {
 			RequestID string `json:"request_id"`
 			Data      []byte `json:"data"`
@@ -43,12 +42,13 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error on unmarshalling payload: %v", err)
 		}
-		log.Printf("Received json:\n  request ID: %s\n  data: %v\n", payload.RequestID, string(payload.Data))
+		log.Printf("[Received]\n subject: %s json:\n  request ID: %s\n  data: %v\n",
+			m.Subject, payload.RequestID, string(payload.Data))
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 	})
 
-	log.Println("Worker subscribed to 'greeting' for processing requests...")
+	log.Println("----- This worker subscribed to 'greeting' for processing requests...-----")
 	log.Println("Server listening on port 8181...")
 
 	http.HandleFunc("/healthz", healthz)

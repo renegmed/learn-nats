@@ -24,6 +24,16 @@ func (s server) baseRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Basic NATS based microservice example v0.0.1")
 }
 
+func (s server) reconnectTask(w http.ResponseWriter, r *http.Request) {
+	payload := Payload{
+		RequestID: "1234-5678-98",
+		Data:      []byte("try reconnection"),
+	}
+
+	publish("greeting", payload, &s, 1)
+
+}
+
 func (s server) createTask(w http.ResponseWriter, r *http.Request) {
 	payload := Payload{
 		RequestID: "1234-5678-90",
@@ -50,13 +60,24 @@ func publish(subject string, payload Payload, s *server, n int) {
 		payload.RequestID = fmt.Sprintf("%s-%d", payload.RequestID, i)
 		payloadJSON, err := json.Marshal(payload)
 
-		err = s.nc.Publish(subject, payloadJSON)
-		if err != nil {
-			log.Printf("Error on making NATS publish %d: %v\n", i, err)
-		}
+		for range time.NewTicker(500 * time.Microsecond).C {
+			if s.nc.IsClosed() {
+				log.Fatal("Disconnected forever! Exiting....")
+			}
+			if s.nc.IsReconnecting() {
+				log.Println("Disconnected temporarily, skipping for now")
+				continue
+			}
 
-		log.Printf("[PUBLISH] subject '%s' %d. data: \n%s\n", subject, i, string(payloadJSON))
+			err = s.nc.Publish(subject, payloadJSON)
+			if err != nil {
+				log.Fatalf("Error on making NATS publish %d: %v\n", i, err)
+			}
+
+			log.Printf("[PUBLISH] subject '%s' %d. data: \n%s\n", subject, i, string(payload.Data))
+		}
 	}
+
 }
 
 func request(subject string, payload Payload, s *server, n int) {
@@ -65,7 +86,7 @@ func request(subject string, payload Payload, s *server, n int) {
 		payload.RequestID = fmt.Sprintf("%s-%d", payload.RequestID, i)
 		payloadJSON, err := json.Marshal(payload)
 
-		log.Printf("[REQUEST] subject '%s' %d. data: \n%v\n", subject, i, string(payloadJSON))
+		log.Printf("[REQUEST] subject '%s' %d. data: \n%v\n", subject, i, string(payload.Data))
 
 		response, err := s.nc.Request(subject, payloadJSON, 1*time.Second)
 		if err != nil {
@@ -93,9 +114,18 @@ func main() {
 	var err error
 	uri := os.Getenv("NATS_URI")
 
-	nc, err := nats.Connect(uri, nats.Name("practical-nats-client"),
-		nats.UserInfo("foo", "secret"),
-	)
+	opts := nats.DefaultOptions
+	// Arbitrarily small reconnecting buffer
+	opts.ReconnectBufSize = 256
+	opts.Url = uri
+	opts.User = "foo"
+	opts.Password = "secret"
+	opts.Name = "practical-nats-client"
+	nc, err := opts.Connect()
+
+	// nc, err := nats.Connect(uri, nats.Name("practical-nats-client"),
+	// 	nats.UserInfo("foo", "secret"),
+	// )
 
 	if err != nil {
 		log.Fatal("Error establishing connection to NATS:", err)
@@ -106,6 +136,7 @@ func main() {
 	log.Println("Connected to NATS at:", s.nc.ConnectedUrl())
 	http.HandleFunc("/", s.baseRoot)
 	http.HandleFunc("/createTask", s.createTask)
+	http.HandleFunc("/reconnectTask", s.reconnectTask)
 	http.HandleFunc("/healthz", s.healthz)
 
 	log.Println("Server listening on port 8080...")

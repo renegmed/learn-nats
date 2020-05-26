@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/nats-io/nats.go"
 )
@@ -49,7 +48,7 @@ func main() {
 		if string(payload.Data) == "Can you help me?" {
 			reply(m.Reply, "Absolutely, I will help you ----- WORKER 2", nc)
 		}
-		time.Sleep(500 * time.Millisecond)
+		//time.Sleep(2000 * time.Millisecond)
 	})
 
 	if err != nil {

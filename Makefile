@@ -10,6 +10,11 @@ api-task:
 	curl http://localhost:8282/createTask
 .PHONY: api-task
 
+api-recon:
+	curl http://localhost:8282/reconnectTask
+.PHONY: api-recon
+
+
 api-logs:
 	docker logs -f nats-docker_api_1
 .PHONY: api-logs

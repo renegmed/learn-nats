@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/nats-io/nats.go"
 )
@@ -50,7 +49,7 @@ func main() {
 			reply(m.Reply, "Sure, I would love to help you +++++ WORKER 1", nc)
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		//time.Sleep(2000 * time.Millisecond)
 
 	})
 

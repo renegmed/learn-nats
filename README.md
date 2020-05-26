@@ -26,6 +26,17 @@ As soon as the client receives the PONG reply, the Flush call will
 unblock and let the client assume that the messages that were fired
 have been processed by the server.
 
+Using Request
+
+Request API enables the client to publish a message and then wait for 
+someone to reply.
+
+Request/Response 
+
+Client would receive only single response among the workers. Request is 
+blocked until a response is received or timeout occurs.
+
+
 
 This is for NATS version 1.1
 Steps:

@@ -43,8 +43,12 @@ func main() {
 			log.Fatalf("Error on unmarshalling payload: %v", err)
 		}
 
-		log.Printf("[Received]\n subject: %s json:\n  request ID: %s\n  data: %v\n",
+		log.Printf("[RECEIVE]\n subject: %s json:\n  request ID: %s\n  data: %v\n",
 			m.Subject, payload.RequestID, string(payload.Data))
+
+		if string(payload.Data) == "Can you help me?" {
+			reply(m.Reply, "Sure, I would love to help you +++++ WORKER 1", nc)
+		}
 
 		time.Sleep(500 * time.Millisecond)
 
@@ -57,4 +61,25 @@ func main() {
 	if err := http.ListenAndServe(":8181", nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func reply(subject string, message string, nc *nats.Conn) error {
+	payload := struct {
+		RequestID string `json:"request_id"`
+		Data      []byte `json:"data"`
+	}{
+		RequestID: "2222-3333-99",
+		Data:      []byte(message),
+	}
+
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[REPLY] subject '%s' payload: \n%v\n", subject, string(payload.Data))
+
+	err = nc.Publish(subject, payloadJSON)
+
+	return err
 }

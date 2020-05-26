@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/nats-io/nats.go"
 )
@@ -26,35 +27,62 @@ func (s server) baseRoot(w http.ResponseWriter, r *http.Request) {
 func (s server) createTask(w http.ResponseWriter, r *http.Request) {
 	payload := Payload{
 		RequestID: "1234-5678-90",
-		Data:      []byte("Happy birthday to you!"),
+		Data:      []byte("Can you help me?"),
 	}
 
-	publish(payload, &s, 10)
+	request("greeting", payload, &s, 1)
 
 	s.nc.Flush()
 
-	payload = Payload{
-		RequestID: "8888-7777-77",
-		Data:      []byte("Have a great celebration!"),
-	}
+	// payload = Payload{
+	// 	RequestID: "8888-7777-77",
+	// 	Data:      []byte("Have a great celebration!"),
+	// }
 
-	publish(payload, &s, 5)
+	// publish(payload, &s, 5)
 
-	s.nc.Flush()
+	// s.nc.Flush()
 }
 
-func publish(payload Payload, s *server, n int) {
+func publish(subject string, payload Payload, s *server, n int) {
 	for i := 0; i < n; i++ {
 		payload.RequestID = payload.RequestID[:12]
 		payload.RequestID = fmt.Sprintf("%s-%d", payload.RequestID, i)
 		payloadJSON, err := json.Marshal(payload)
 
-		err = s.nc.Publish("greeting", payloadJSON)
+		err = s.nc.Publish(subject, payloadJSON)
 		if err != nil {
-			log.Printf("Error on making NATS request %d: %v\n", i, err)
+			log.Printf("Error on making NATS publish %d: %v\n", i, err)
 		}
-		log.Print("[Published] subject 'greeting' %d. data: \n%s\n", i, string(payloadJSON))
+
+		log.Printf("[PUBLISH] subject '%s' %d. data: \n%s\n", subject, i, string(payloadJSON))
 	}
+}
+
+func request(subject string, payload Payload, s *server, n int) {
+	for i := 0; i < n; i++ {
+		payload.RequestID = payload.RequestID[:12]
+		payload.RequestID = fmt.Sprintf("%s-%d", payload.RequestID, i)
+		payloadJSON, err := json.Marshal(payload)
+
+		log.Printf("[REQUEST] subject '%s' %d. data: \n%v\n", subject, i, string(payloadJSON))
+
+		response, err := s.nc.Request(subject, payloadJSON, 1*time.Second)
+		if err != nil {
+			log.Printf("Error while making NATS request %d: %v\n", i, err)
+		}
+		p, err := processResponse(response)
+		if err != nil {
+			log.Println("Error on unmarshal of response", err)
+		}
+		log.Println("[RESPONSE] ", string(p.Data))
+	}
+}
+
+func processResponse(msg *nats.Msg) (*Payload, error) {
+	payload := &Payload{}
+	err := json.Unmarshal([]byte(msg.Data), payload)
+	return payload, err
 }
 func (s server) healthz(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "OK")

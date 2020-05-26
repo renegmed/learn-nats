@@ -47,6 +47,9 @@ start:
 .PHONY: start
 
 
+stop-server:
+	docker stop nats-docker_natsx_1
+.PHONY: stop-server
 
 restart-server:
 	docker restart nats-docker_natsx_1

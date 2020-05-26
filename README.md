@@ -36,7 +36,9 @@ Request/Response
 Client would receive only single response among the workers. Request is 
 blocked until a response is received or timeout occurs.
 
+States of NATS Connection
 
+Skipping sending message during reconnecting, do the following steps below:
 
 This is for NATS version 1.1
 Steps:
@@ -53,7 +55,12 @@ Steps:
 4. Set the api log monitor (new terminal)
 	> make api-logs
 
-5. Send api request (new terminal)
-	> make api-task
+5. Send api reconnect task (new terminal)
+	> make api-recon
 
+6. Stop the server
+	> make stop-server
+
+7. Restart the server
+	> make restart-server
 

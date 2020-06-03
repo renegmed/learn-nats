@@ -2,61 +2,70 @@ up:
 	docker-compose up --build -d
 .PHONY: up
 
+
+
 api-health:
 	curl http://localhost:8282/healthz
 .PHONY: api-health
+
 
 api-task:
 	curl http://localhost:8282/createTask
 .PHONY: api-task
 
 api-recon:
-	curl http://localhost:8282/reconnectTask
+	curl http://localhost:8282/reconnect
 .PHONY: api-recon
 
+api-cb:
+	curl http://localhost:8282/callbacks
+.PHONY: api-cb
 
-api-logs:
-	docker logs -f nats-docker_api_1
-.PHONY: api-logs
+tail-api:
+	docker logs api -f
+tail-worker1: 
+	docker logs worker1 -f 
+tail-worker2:
+	docker logs worker2 -f
+.PHONY: tail-api tail-worker1 tail-worker2
 
 
 worker-health:
 	curl http://localhost:8484/healthz
 .PHONY: worker-health
-
-worker-logs:
-	docker logs -f nats-docker_worker_1
-.PHONY: worker-logs
-
+ 
 
 worker-health-2:
 	curl http://localhost:8686/healthz
 .PHONY: worker-health-2
 
-worker-logs-2:
-	docker logs -f nats-docker_worker2_1
-.PHONY: worker-logs-2
-
+ 
 
 stop:
-	docker stop nats-docker_api_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_natsx_1
+	docker stop api worker1 worker2 nats
 .PHONY: stop
 
 start:
-	docker start nats-docker_natsx_1 nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
+	docker start nats worker1 worker2 api
 .PHONY: start
 
 
+rebuild-server:
+	docker stop nats
+	docker rmi nats -f
+	docker-compose up --build -d
+.PHONY: rebuild-server
+
 stop-server:
-	docker stop nats-docker_natsx_1
+	docker stop nats
 .PHONY: stop-server
 
 restart-server:
-	docker restart nats-docker_natsx_1
+	docker restart nats
 .PHONY: restart-server
 
 restart-non-server:
-	docker restart nats-docker_worker_1 nats-docker_worker2_1  nats-docker_api_1
+	docker restart worker1 worker2 api
 .PHONY: restart-non-server
 
 
